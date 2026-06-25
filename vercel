@@ -1,0 +1,9 @@
+{
+  "buildCommand": "echo 'Building widgets...'",
+  "functions": {
+    "api/notion.js": {
+      "memory": 128,
+      "maxDuration": 10
+    }
+  }
+}
