@@ -721,7 +721,7 @@
     </div>
 
     <button class="history-btn" id="historyBtn">Ver Histórico Notion</button>
-    <div class="status-sync" id="syncStatus">⏳ Conectando ao Notion...</div>
+    <div class="status-sync" id="syncStatus">✓ Conectado ao Notion</div>
   </div>
 </div>
 
@@ -738,7 +738,7 @@
 
 <script>
 // ===== CONFIG =====
-const API_URL = '/api/notion'; // Mude para sua URL do Vercel quando fizer deploy
+const NOTION_API_KEY = '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';
 const NOTION_DATABASE_ID = '0483ff059e7440f48dbb232973118b28';
 
 // ===== TEMA =====
@@ -899,33 +899,34 @@ function playNotification() {
 
 async function saveToNotion(type) {
   const data = {
-    action: 'create',
-    data: {
-      parent: { database_id: NOTION_DATABASE_ID },
-      properties: {
-        title: {
-          title: [{ text: { content: `Pomodoro - ${type}` } }]
-        },
-        Tipo: {
-          select: { name: type === 'work' ? 'Trabalho' : 'Pausa' }
-        },
-        Hora: {
-          date: { start: new Date().toISOString() }
-        },
-        Duração: {
-          number: type === 'work' ? workDuration / 60 : breakDuration / 60
-        },
-        Status: {
-          select: { name: 'Concluído' }
-        }
+    parent: { database_id: NOTION_DATABASE_ID },
+    properties: {
+      title: {
+        title: [{ text: { content: `Pomodoro - ${type}` } }]
+      },
+      Tipo: {
+        select: { name: type === 'work' ? 'Trabalho' : 'Pausa' }
+      },
+      Hora: {
+        date: { start: new Date().toISOString() }
+      },
+      Duração: {
+        number: type === 'work' ? workDuration / 60 : breakDuration / 60
+      },
+      Status: {
+        select: { name: 'Concluído' }
       }
     }
   };
 
   try {
-    const response = await fetch(API_URL, {
+    const response = await fetch('https://api.notion.com/v1/pages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Authorization': `Bearer ${NOTION_API_KEY}`,
+        'Content-Type': 'application/json',
+        'Notion-Version': '2022-06-28'
+      },
       body: JSON.stringify(data)
     });
 
@@ -947,61 +948,61 @@ async function loadHistory() {
   historyContent.innerHTML = '<div class="modal-item">⏳ Carregando histórico...</div>';
   
   try {
-    const response = await fetch(API_URL, {
+    const response = await fetch(`https://api.notion.com/v1/databases/${NOTION_DATABASE_ID}/query`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'query',
-        databaseId: NOTION_DATABASE_ID
-      })
+      headers: {
+        'Authorization': `Bearer ${NOTION_API_KEY}`,
+        'Content-Type': 'application/json',
+        'Notion-Version': '2022-06-28'
+      },
+      body: JSON.stringify({})
     });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      historyContent.innerHTML = `<div class="modal-item">❌ Erro: ${errorData.error || response.statusText}</div>`;
-      return;
-    }
-
-    const data = await response.json();
-    const results = data.results.slice(0, 30);
-    
-    if (results.length === 0) {
-      historyContent.innerHTML = '<div class="modal-item">Nenhum pomodoro registrado ainda</div>';
+    if (response.ok) {
+      const data = await response.json();
+      const results = data.results.slice(0, 30);
+      
+      if (results.length === 0) {
+        historyContent.innerHTML = '<div class="modal-item">Nenhum pomodoro registrado ainda</div>';
+      } else {
+        historyContent.innerHTML = results.map(item => {
+          const props = item.properties;
+          const tipo = props.Tipo?.select?.name || 'N/A';
+          const hora = new Date(props.Hora?.date?.start || '').toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+          return `<div class="modal-item">• ${hora} - ${tipo}</div>`;
+        }).join('');
+      }
     } else {
-      historyContent.innerHTML = results.map(item => {
-        const props = item.properties;
-        const tipo = props.Tipo?.select?.name || 'N/A';
-        const hora = new Date(props.Hora?.date?.start || '').toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-        return `<div class="modal-item">• ${hora} - ${tipo}</div>`;
-      }).join('');
+      historyContent.innerHTML = '<div class="modal-item">❌ Erro ao carregar (teste depois no Vercel)</div>';
     }
   } catch (error) {
-    historyContent.innerHTML = `<div class="modal-item">❌ Erro: ${error.message}</div>`;
+    historyContent.innerHTML = '<div class="modal-item">❌ CORS bloqueado localmente. Deploy no Vercel pra funcionar!</div>';
   }
 }
 
 async function deleteAllNotionHistory() {
   try {
-    const response = await fetch(API_URL, {
+    const response = await fetch(`https://api.notion.com/v1/databases/${NOTION_DATABASE_ID}/query`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'query',
-        databaseId: NOTION_DATABASE_ID
-      })
+      headers: {
+        'Authorization': `Bearer ${NOTION_API_KEY}`,
+        'Content-Type': 'application/json',
+        'Notion-Version': '2022-06-28'
+      },
+      body: JSON.stringify({})
     });
 
     if (response.ok) {
       const data = await response.json();
       
       for (const item of data.results) {
-        await fetch(API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'delete',
-            pageId: item.id
-          })
+        await fetch(`https://api.notion.com/v1/pages/${item.id}`, {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${NOTION_API_KEY}`,
+            'Notion-Version': '2022-06-28'
+          },
+          body: JSON.stringify({ archived: true })
         });
       }
       
@@ -1084,7 +1085,7 @@ presets.forEach(preset => {
 
 startBtn.addEventListener('click', startTimer);
 pauseBtn.addEventListener('click', pauseTimer);
-resetBtn.addEventListener('click', resetTimer);
+resetBtn.addEventListener('click', resetBtn);
 historyBtn.addEventListener('click', () => {
   loadHistory();
   historyModal.classList.add('active');
@@ -1098,7 +1099,6 @@ deleteHistoryBtn.addEventListener('click', () => {
   }
 });
 
-syncStatus.textContent = '✓ Conectado ao Notion';
 updateDisplay();
 </script>
 
