@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pomodoro - Arquitetura Materna</title>
+<title>Widgets - Arquitetura Materna</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -19,6 +19,11 @@
     justify-content: center;
     align-items: center;
     padding: 12px;
+    transition: background 0.3s ease;
+  }
+  
+  body.light-mode {
+    background: #F5EFE7;
   }
   
   .container {
@@ -27,69 +32,275 @@
     width: 100%;
     max-width: 95vw;
     max-height: 95vh;
+    transition: background 0.3s ease, border-color 0.3s ease;
+    position: relative;
+    border-radius: 8px;
+    overflow-y: auto;
   }
   
-  .config-panel {
-    background: rgba(245, 230, 224, 0.05);
-    border: 1px solid rgba(212, 181, 171, 0.3);
-    border-radius: 6px;
-    padding: clamp(10px, 2vw, 14px);
-    margin-bottom: clamp(12px, 3vw, 18px);
+  body.light-mode .container {
+    background: #FFFFFF;
+    border: 1px solid #E8D4CA;
   }
 
-  .config-title {
-    font-size: clamp(8px, 2vw, 10px);
-    color: #D4B5AB;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    font-weight: 700;
-    margin-bottom: clamp(6px, 1vw, 8px);
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: clamp(12px, 2vw, 20px);
+    gap: 12px;
+    flex-wrap: wrap;
   }
 
-  input {
-    width: 100%;
-    background: rgba(245, 230, 224, 0.08);
-    border: 1px solid #D4B5AB;
-    color: #F5E6E0;
-    padding: clamp(5px, 1vw, 7px);
-    border-radius: 3px;
-    font-size: clamp(8px, 1.5vw, 10px);
-    font-family: 'Inter', sans-serif;
-    margin-bottom: clamp(4px, 1vw, 6px);
+  .tabs {
+    display: flex;
+    gap: clamp(6px, 1.5vw, 12px);
   }
 
-  input::placeholder {
-    color: #D4B5AB;
-    opacity: 0.6;
-  }
-
-  .config-btn {
+  .tab-btn {
     background: transparent;
     border: 1px solid #D4B5AB;
     color: #D4B5AB;
-    padding: clamp(4px, 1vw, 6px) clamp(8px, 2vw, 12px);
+    padding: clamp(6px, 1.5vw, 8px) clamp(12px, 2vw, 16px);
     border-radius: 3px;
     cursor: pointer;
-    font-size: clamp(7px, 1.5vw, 9px);
+    font-size: clamp(8px, 1.5vw, 10px);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.8px;
     font-family: 'Inter', sans-serif;
-    transition: all 0.2s;
+    transition: all 0.3s ease;
   }
-
-  .config-btn:hover {
-    background: rgba(212, 181, 171, 0.1);
+  
+  body.light-mode .tab-btn {
+    border-color: #8B7A75;
+    color: #8B7A75;
+  }
+  
+  .tab-btn:hover {
+    background: rgba(245, 230, 224, 0.1);
     border-color: #F5E6E0;
     color: #F5E6E0;
   }
-
-  .status-sync {
-    font-size: clamp(7px, 1.5vw, 8px);
-    color: #E8D4CA;
-    margin-top: clamp(4px, 1vw, 6px);
+  
+  body.light-mode .tab-btn:hover {
+    background: rgba(61, 38, 38, 0.1);
+    border-color: #3D2626;
+    color: #3D2626;
+  }
+  
+  .tab-btn.active {
+    background: rgba(245, 230, 224, 0.2);
+    border-color: #F5E6E0;
+    color: #F5E6E0;
+  }
+  
+  body.light-mode .tab-btn.active {
+    background: rgba(61, 38, 38, 0.1);
+    border-color: #3D2626;
+    color: #3D2626;
   }
 
+  .theme-toggle {
+    background: transparent;
+    border: 1px solid #D4B5AB;
+    color: #F5E6E0;
+    padding: clamp(6px, 1.5vw, 8px) clamp(12px, 2vw, 16px);
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: clamp(8px, 1.5vw, 10px);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+  }
+  
+  body.light-mode .theme-toggle {
+    border-color: #8B7A75;
+    color: #3D2626;
+  }
+  
+  .theme-toggle:hover {
+    background: rgba(245, 230, 224, 0.1);
+    border-color: #F5E6E0;
+    color: #F5E6E0;
+  }
+  
+  body.light-mode .theme-toggle:hover {
+    background: rgba(61, 38, 38, 0.1);
+    border-color: #3D2626;
+  }
+
+  .content {
+    display: none;
+  }
+
+  .content.active {
+    display: block;
+  }
+
+  /* ===== FLIP CLOCK ===== */
+  .main-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+    width: 100%;
+    height: auto;
+  }
+  
+  .clock {
+    display: flex;
+    gap: 6px;
+    align-items: flex-start;
+    flex-shrink: 0;
+  }
+  
+  .time-box {
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    text-align: center;
+    background: transparent;
+    box-shadow: none;
+  }
+  
+  .number {
+    font-size: clamp(36px, 10vw, 56px);
+    font-weight: 700;
+    color: #F5E6E0;
+    line-height: 1;
+    letter-spacing: -2px;
+    font-variant-numeric: tabular-nums;
+    transition: color 0.3s ease;
+  }
+  
+  body.light-mode .number {
+    color: #4D1D2B;
+  }
+  
+  .label {
+    font-size: clamp(7px, 2vw, 9px);
+    color: #D4B5AB;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    margin-top: 4px;
+    font-weight: 600;
+    transition: color 0.3s ease;
+  }
+  
+  body.light-mode .label {
+    color: #4D1D2B;
+  }
+  
+  .separator {
+    font-size: clamp(32px, 8vw, 44px);
+    color: #D47A8C;
+    font-weight: 700;
+    padding-top: clamp(8px, 2vw, 12px);
+    line-height: 0.8;
+    flex-shrink: 0;
+  }
+  
+  .divider {
+    flex-shrink: 0;
+  }
+  
+  .divider.vertical {
+    width: 1px;
+    height: clamp(80px, 20vh, 120px);
+    background: #D47A8C;
+    opacity: 0.3;
+    margin: 0 24px;
+    transition: opacity 0.3s ease;
+  }
+  
+  body.light-mode .divider.vertical {
+    opacity: 0.2;
+  }
+  
+  .divider.horizontal {
+    width: 100%;
+    height: 1px;
+    background: #D47A8C;
+    opacity: 0.3;
+    margin: 16px 0;
+    display: none;
+    transition: opacity 0.3s ease;
+  }
+  
+  body.light-mode .divider.horizontal {
+    opacity: 0.2;
+  }
+  
+  .info {
+    display: flex;
+    gap: 20px;
+    text-align: center;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  .info-item {
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    flex: 0 1 auto;
+    min-width: fit-content;
+  }
+  
+  .info-label {
+    font-size: clamp(7px, 2vw, 9px);
+    color: #D4B5AB;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+    font-weight: 600;
+    transition: color 0.3s ease;
+  }
+  
+  body.light-mode .info-label {
+    color: #4D1D2B;
+  }
+  
+  .info-value {
+    font-size: clamp(11px, 2.5vw, 14px);
+    color: #F5E6E0;
+    font-weight: 600;
+    line-height: 1.3;
+    transition: color 0.3s ease;
+  }
+  
+  body.light-mode .info-value {
+    color: #4D1D2B;
+  }
+  
+  .temp-big {
+    font-size: clamp(20px, 5vw, 28px);
+    color: #F5E6E0;
+    font-weight: 700;
+    transition: color 0.3s ease;
+  }
+  
+  body.light-mode .temp-big {
+    color: #4D1D2B;
+  }
+  
+  .condition-text {
+    font-size: clamp(10px, 2vw, 12px);
+    color: #E8D4CA;
+    font-weight: 400;
+    transition: color 0.3s ease;
+  }
+  
+  body.light-mode .condition-text {
+    color: #4D1D2B;
+  }
+
+  /* ===== POMODORO ===== */
   .timer-display {
     text-align: center;
     margin-bottom: clamp(12px, 2vw, 16px);
@@ -102,6 +313,11 @@
     line-height: 1;
     font-variant-numeric: tabular-nums;
     letter-spacing: -2px;
+    transition: color 0.3s ease;
+  }
+  
+  body.light-mode .timer-number {
+    color: #4D1D2B;
   }
   
   .status-line {
@@ -111,6 +327,11 @@
     letter-spacing: 1.2px;
     font-weight: 700;
     margin-top: clamp(4px, 1vw, 6px);
+    transition: color 0.3s ease;
+  }
+  
+  body.light-mode .status-line {
+    color: #4D1D2B;
   }
   
   .controls {
@@ -133,12 +354,24 @@
     text-transform: uppercase;
     letter-spacing: 0.8px;
     font-family: 'Inter', sans-serif;
-    transition: all 0.2s;
+    transition: all 0.3s ease;
+  }
+  
+  body.light-mode button {
+    border-color: #8B7A75;
+    color: #4D1D2B;
   }
   
   button:hover {
     background: rgba(245, 230, 224, 0.1);
     border-color: #F5E6E0;
+    color: #F5E6E0;
+  }
+  
+  body.light-mode button:hover {
+    background: rgba(61, 38, 38, 0.1);
+    border-color: #4D1D2B;
+    color: #4D1D2B;
   }
   
   button:active {
@@ -153,10 +386,6 @@
     flex-wrap: wrap;
   }
   
-  .info-item {
-    text-align: center;
-  }
-  
   .info-label {
     font-size: clamp(7px, 1.5vw, 9px);
     color: #D4B5AB;
@@ -164,12 +393,22 @@
     letter-spacing: 1px;
     font-weight: 600;
     margin-bottom: clamp(2px, 0.5vw, 4px);
+    transition: color 0.3s ease;
+  }
+  
+  body.light-mode .info-label {
+    color: #4D1D2B;
   }
   
   .info-value {
     font-size: clamp(13px, 3vw, 16px);
     color: #F5E6E0;
     font-weight: 700;
+    transition: color 0.3s ease;
+  }
+  
+  body.light-mode .info-value {
+    color: #4D1D2B;
   }
   
   .settings {
@@ -180,6 +419,11 @@
     padding-top: clamp(10px, 2vw, 14px);
     border-top: 1px solid rgba(245, 230, 224, 0.1);
     flex-wrap: wrap;
+    transition: border-color 0.3s ease;
+  }
+  
+  body.light-mode .settings {
+    border-top: 1px solid rgba(61, 38, 38, 0.1);
   }
   
   .time-preset {
@@ -194,7 +438,7 @@
     text-transform: uppercase;
     letter-spacing: 0.8px;
     font-family: 'Inter', sans-serif;
-    transition: all 0.2s;
+    transition: all 0.3s ease;
   }
   
   .time-preset:hover {
@@ -208,12 +452,46 @@
     border-color: #F5E6E0;
     color: #F5E6E0;
   }
+  
+  body.light-mode .time-preset {
+    border-color: #8B7A75;
+    color: #4D1D2B;
+  }
+  
+  body.light-mode .time-preset:hover {
+    background: rgba(61, 38, 38, 0.1);
+    border-color: #4D1D2B;
+    color: #4D1D2B;
+  }
+  
+  body.light-mode .time-preset.active {
+    background: rgba(61, 38, 38, 0.1);
+    border-color: #4D1D2B;
+    color: #4D1D2B;
+  }
 
   .history-btn {
     width: 100%;
     margin-top: clamp(10px, 2vw, 14px);
     padding-top: clamp(10px, 2vw, 14px);
     border-top: 1px solid rgba(245, 230, 224, 0.1);
+    transition: border-color 0.3s ease;
+  }
+  
+  body.light-mode .history-btn {
+    border-top: 1px solid rgba(61, 38, 38, 0.1);
+  }
+
+  .status-sync {
+    font-size: clamp(7px, 1.5vw, 8px);
+    color: #E8D4CA;
+    text-align: center;
+    margin-top: clamp(8px, 1.5vw, 10px);
+    transition: color 0.3s ease;
+  }
+  
+  body.light-mode .status-sync {
+    color: #4D1D2B;
   }
 
   .modal {
@@ -243,6 +521,12 @@
     max-height: 80vh;
     overflow-y: auto;
     width: 100%;
+    transition: background 0.3s ease, border-color 0.3s ease;
+  }
+  
+  body.light-mode .modal-content {
+    background: #FFFFFF;
+    border-color: #E8D4CA;
   }
 
   .modal-header {
@@ -252,6 +536,11 @@
     letter-spacing: 1.5px;
     font-weight: 700;
     margin-bottom: clamp(10px, 2vw, 14px);
+    transition: color 0.3s ease;
+  }
+  
+  body.light-mode .modal-header {
+    color: #4D1D2B;
   }
 
   .modal-item {
@@ -259,6 +548,12 @@
     color: #E8D4CA;
     padding: clamp(4px, 1vw, 6px) 0;
     border-bottom: 1px solid rgba(245, 230, 224, 0.05);
+    transition: color 0.3s ease, border-color 0.3s ease;
+  }
+  
+  body.light-mode .modal-item {
+    color: #4D1D2B;
+    border-bottom: 1px solid rgba(61, 38, 38, 0.05);
   }
 
   .modal-item:last-child {
@@ -276,49 +571,158 @@
     flex: 1;
     min-width: 80px;
   }
+
+  /* LAYOUT RESPONSIVO */
+  @media (min-aspect-ratio: 1.2/1) {
+    .main-content {
+      flex-direction: row;
+    }
+    
+    .divider.vertical {
+      display: block;
+    }
+    
+    .divider.horizontal {
+      display: none;
+    }
+    
+    .info {
+      flex-direction: row;
+      gap: 28px;
+    }
+  }
+
+  @media (max-aspect-ratio: 1.2/1) {
+    .container {
+      padding: 16px;
+    }
+    
+    .main-content {
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .divider.vertical {
+      display: none;
+    }
+    
+    .divider.horizontal {
+      display: block;
+    }
+    
+    .info {
+      flex-direction: row;
+      gap: 16px;
+      justify-content: center;
+    }
+  }
+
+  @media (max-width: 400px) {
+    .container {
+      padding: 12px;
+    }
+    
+    .number {
+      font-size: 32px;
+    }
+    
+    .separator {
+      font-size: 28px;
+    }
+    
+    .header {
+      flex-direction: column;
+      margin-bottom: 8px;
+    }
+    
+    .tabs {
+      width: 100%;
+      justify-content: center;
+    }
+  }
 </style>
 </head>
 <body>
 
 <div class="container">
-  <div class="config-panel">
-    <div class="config-title">Configuração Notion</div>
-    <input type="password" id="apiKey" placeholder="Cole sua API Key aqui" />
-    <button class="config-btn" id="saveConfigBtn">Salvar</button>
-    <div class="status-sync" id="syncStatus">Offline</div>
+  <div class="header">
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="clock">⏰ Relógio</button>
+      <button class="tab-btn" data-tab="pomodoro">🍅 Pomodoro</button>
+    </div>
+    <button class="theme-toggle" id="themeToggle">🌙 Escuro</button>
   </div>
 
-  <div class="timer-display">
-    <div class="timer-number" id="timerDisplay">25:00</div>
-    <div class="status-line" id="statusText">PAUSADO - TRABALHO</div>
-  </div>
-  
-  <div class="controls">
-    <button id="startBtn">Iniciar</button>
-    <button id="pauseBtn">Pausar</button>
-    <button id="resetBtn">Reset</button>
-  </div>
-  
-  <div class="info-row">
-    <div class="info-item">
-      <div class="info-label">Ciclos</div>
-      <div class="info-value" id="cycles">0</div>
+  <!-- ===== FLIP CLOCK ===== -->
+  <div id="clock" class="content active">
+    <div class="main-content">
+      <div class="clock">
+        <div class="time-box">
+          <div class="number" id="horas">00</div>
+          <div class="label" id="periodo">AM</div>
+        </div>
+        <div class="separator">:</div>
+        <div class="time-box">
+          <div class="number" id="minutos">00</div>
+          <div class="label">min</div>
+        </div>
+      </div>
+      
+      <div class="divider vertical"></div>
+      <div class="divider horizontal"></div>
+      
+      <div class="info">
+        <div class="info-item">
+          <div class="info-label">Data</div>
+          <div class="info-value" id="data">--</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Temp</div>
+          <div class="info-value" id="temperatura" style="font-size: clamp(20px, 4vw, 26px);">--°</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Condição</div>
+          <div class="condition-text" id="condicao">--</div>
+        </div>
+      </div>
     </div>
-    <div class="info-item">
-      <div class="info-label">Tempo Total</div>
-      <div class="info-value" id="totalTime">0m</div>
-    </div>
-  </div>
-  
-  <div class="settings">
-    <button class="time-preset active" data-work="25">25</button>
-    <button class="time-preset" data-work="20">20</button>
-    <button class="time-preset" data-work="15">15</button>
-    <button class="time-preset" data-work="10">10</button>
-    <button class="time-preset" data-work="5">5</button>
   </div>
 
-  <button class="history-btn" id="historyBtn">Ver Histórico Notion</button>
+  <!-- ===== POMODORO ===== -->
+  <div id="pomodoro" class="content">
+    <div class="timer-display">
+      <div class="timer-number" id="timerDisplay">25:00</div>
+      <div class="status-line" id="statusText">PAUSADO - TRABALHO</div>
+    </div>
+    
+    <div class="controls">
+      <button id="startBtn">Iniciar</button>
+      <button id="pauseBtn">Pausar</button>
+      <button id="resetBtn">Reset</button>
+    </div>
+    
+    <div class="info-row">
+      <div class="info-item">
+        <div class="info-label">Ciclos</div>
+        <div class="info-value" id="cycles">0</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Tempo Total</div>
+        <div class="info-value" id="totalTime">0m</div>
+      </div>
+    </div>
+    
+    <div class="settings">
+      <button class="time-preset active" data-work="25">25</button>
+      <button class="time-preset" data-work="20">20</button>
+      <button class="time-preset" data-work="15">15</button>
+      <button class="time-preset" data-work="10">10</button>
+      <button class="time-preset" data-work="5">5</button>
+    </div>
+
+    <button class="history-btn" id="historyBtn">Ver Histórico Notion</button>
+    <div class="status-sync" id="syncStatus">⏳ Conectando ao Notion...</div>
+  </div>
 </div>
 
 <div class="modal" id="historyModal">
@@ -333,6 +737,110 @@
 </div>
 
 <script>
+// ===== CONFIG =====
+const API_URL = '/api/notion'; // Mude para sua URL do Vercel quando fizer deploy
+const NOTION_DATABASE_ID = '0483ff059e7440f48dbb232973118b28';
+
+// ===== TEMA =====
+const themeToggle = document.getElementById('themeToggle');
+const body = document.body;
+
+const savedTheme = localStorage.getItem('widgetsTheme') || 'dark';
+if (savedTheme === 'light') {
+  body.classList.add('light-mode');
+  themeToggle.textContent = '☀️ Claro';
+}
+
+themeToggle.addEventListener('click', () => {
+  body.classList.toggle('light-mode');
+  const isLight = body.classList.contains('light-mode');
+  localStorage.setItem('widgetsTheme', isLight ? 'light' : 'dark');
+  themeToggle.textContent = isLight ? '☀️ Claro' : '🌙 Escuro';
+});
+
+// ===== ABAS =====
+const tabBtns = document.querySelectorAll('.tab-btn');
+const contents = document.querySelectorAll('.content');
+
+tabBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tabName = btn.dataset.tab;
+    
+    tabBtns.forEach(b => b.classList.remove('active'));
+    contents.forEach(c => c.classList.remove('active'));
+    
+    btn.classList.add('active');
+    document.getElementById(tabName).classList.add('active');
+  });
+});
+
+// ===== FLIP CLOCK =====
+function atualizaHora() {
+  const agora = new Date();
+  const horas = String(agora.getHours()).padStart(2, '0');
+  const minutos = String(agora.getMinutes()).padStart(2, '0');
+  const periodo = agora.getHours() >= 12 ? 'PM' : 'AM';
+  
+  document.getElementById('horas').textContent = horas;
+  document.getElementById('minutos').textContent = minutos;
+  document.getElementById('periodo').textContent = periodo;
+}
+
+function atualizaData() {
+  const agora = new Date();
+  const meses = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+  const dias = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sab'];
+  
+  const dia = dias[agora.getDay()];
+  const num = agora.getDate();
+  const mes = meses[agora.getMonth()];
+  
+  document.getElementById('data').textContent = `${dia}, ${num} ${mes}`;
+}
+
+function buscaClima() {
+  fetch('https://api.open-meteo.com/v1/forecast?latitude=-23.5606&longitude=-46.7647&current=temperature_2m,weather_code&temperature_unit=celsius')
+    .then(r => r.json())
+    .then(dados => {
+      if (dados.current) {
+        const temp = Math.round(dados.current.temperature_2m);
+        const codigo = dados.current.weather_code;
+        
+        document.getElementById('temperatura').textContent = temp + '°';
+        
+        const condicoes = {
+          0: 'Ensolarado',
+          1: 'P. nublado',
+          2: 'Nublado',
+          3: 'Encoberto',
+          45: 'Nebuloso',
+          48: 'Nebuloso',
+          51: 'Chuvisco',
+          61: 'Chuva',
+          63: 'Chuva mod.',
+          65: 'Chuva forte',
+          71: 'Neve',
+          80: 'Pancadas',
+          95: 'Trovoada'
+        };
+        
+        document.getElementById('condicao').textContent = condicoes[codigo] || '--';
+      }
+    })
+    .catch(e => {
+      document.getElementById('condicao').textContent = '--';
+    });
+}
+
+atualizaHora();
+atualizaData();
+buscaClima();
+
+setInterval(atualizaHora, 1000);
+setInterval(atualizaData, 60000);
+setInterval(buscaClima, 600000);
+
+// ===== POMODORO =====
 let workDuration = 25 * 60;
 let breakDuration = 5 * 60;
 let timeLeft = workDuration;
@@ -341,13 +849,6 @@ let isWorkPhase = true;
 let completedCycles = 0;
 let totalTimeSpent = 0;
 let timerInterval = null;
-
-const NOTION_DATABASE_ID = '0483ff059e7440f48dbb232973118b28';
-let notionApiKey = localStorage.getItem('notionApiKey') || '';
-
-const apiKeyInput = document.getElementById('apiKey');
-const saveConfigBtn = document.getElementById('saveConfigBtn');
-const syncStatus = document.getElementById('syncStatus');
 
 const startBtn = document.getElementById('startBtn');
 const pauseBtn = document.getElementById('pauseBtn');
@@ -362,6 +863,7 @@ const historyModal = document.getElementById('historyModal');
 const historyContent = document.getElementById('historyContent');
 const deleteHistoryBtn = document.getElementById('deleteHistoryBtn');
 const closeModalBtn = document.getElementById('closeModalBtn');
+const syncStatus = document.getElementById('syncStatus');
 
 function updateDisplay() {
   const minutes = Math.floor(timeLeft / 60);
@@ -396,47 +898,41 @@ function playNotification() {
 }
 
 async function saveToNotion(type) {
-  if (!notionApiKey) {
-    syncStatus.textContent = 'API Key não configurada';
-    return;
-  }
-
   const data = {
-    parent: { database_id: NOTION_DATABASE_ID },
-    properties: {
-      title: {
-        title: [{ text: { content: `Pomodoro - ${type}` } }]
-      },
-      Tipo: {
-        select: { name: type === 'work' ? 'Trabalho' : 'Pausa' }
-      },
-      Hora: {
-        date: { start: new Date().toISOString() }
-      },
-      Duração: {
-        number: type === 'work' ? workDuration / 60 : breakDuration / 60
-      },
-      Status: {
-        select: { name: 'Concluído' }
+    action: 'create',
+    data: {
+      parent: { database_id: NOTION_DATABASE_ID },
+      properties: {
+        title: {
+          title: [{ text: { content: `Pomodoro - ${type}` } }]
+        },
+        Tipo: {
+          select: { name: type === 'work' ? 'Trabalho' : 'Pausa' }
+        },
+        Hora: {
+          date: { start: new Date().toISOString() }
+        },
+        Duração: {
+          number: type === 'work' ? workDuration / 60 : breakDuration / 60
+        },
+        Status: {
+          select: { name: 'Concluído' }
+        }
       }
     }
   };
 
   try {
-    const response = await fetch('https://api.notion.com/v1/pages', {
+    const response = await fetch(API_URL, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${notionApiKey}`,
-        'Content-Type': 'application/json',
-        'Notion-Version': '2022-06-28'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     });
 
     if (response.ok) {
       syncStatus.textContent = '✓ Sincronizado';
       setTimeout(() => {
-        syncStatus.textContent = '✓ Conectado';
+        syncStatus.textContent = '✓ Conectado ao Notion';
       }, 2000);
     } else {
       syncStatus.textContent = '✗ Erro na sincronização';
@@ -448,67 +944,64 @@ async function saveToNotion(type) {
 }
 
 async function loadHistory() {
-  if (!notionApiKey) {
-    historyContent.innerHTML = '<div class="modal-item">Configure API Key primeiro</div>';
-    return;
-  }
-
+  historyContent.innerHTML = '<div class="modal-item">⏳ Carregando histórico...</div>';
+  
   try {
-    const response = await fetch('https://api.notion.com/v1/databases/' + NOTION_DATABASE_ID + '/query', {
+    const response = await fetch(API_URL, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${notionApiKey}`,
-        'Content-Type': 'application/json',
-        'Notion-Version': '2022-06-28'
-      }
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'query',
+        databaseId: NOTION_DATABASE_ID
+      })
     });
 
-    if (response.ok) {
-      const data = await response.json();
-      const results = data.results.slice(0, 30);
-      
-      if (results.length === 0) {
-        historyContent.innerHTML = '<div class="modal-item">Nenhum pomodoro registrado</div>';
-      } else {
-        historyContent.innerHTML = results.map(item => {
-          const props = item.properties;
-          const tipo = props.Tipo?.select?.name || 'N/A';
-          const hora = new Date(props.Hora?.date?.start || '').toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-          return `<div class="modal-item">• ${hora} - ${tipo}</div>`;
-        }).join('');
-      }
+    if (!response.ok) {
+      const errorData = await response.json();
+      historyContent.innerHTML = `<div class="modal-item">❌ Erro: ${errorData.error || response.statusText}</div>`;
+      return;
+    }
+
+    const data = await response.json();
+    const results = data.results.slice(0, 30);
+    
+    if (results.length === 0) {
+      historyContent.innerHTML = '<div class="modal-item">Nenhum pomodoro registrado ainda</div>';
     } else {
-      historyContent.innerHTML = '<div class="modal-item">Erro ao carregar</div>';
+      historyContent.innerHTML = results.map(item => {
+        const props = item.properties;
+        const tipo = props.Tipo?.select?.name || 'N/A';
+        const hora = new Date(props.Hora?.date?.start || '').toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        return `<div class="modal-item">• ${hora} - ${tipo}</div>`;
+      }).join('');
     }
   } catch (error) {
-    historyContent.innerHTML = '<div class="modal-item">Erro ao carregar histórico</div>';
+    historyContent.innerHTML = `<div class="modal-item">❌ Erro: ${error.message}</div>`;
   }
 }
 
 async function deleteAllNotionHistory() {
-  if (!notionApiKey) return;
-
   try {
-    const response = await fetch('https://api.notion.com/v1/databases/' + NOTION_DATABASE_ID + '/query', {
+    const response = await fetch(API_URL, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${notionApiKey}`,
-        'Content-Type': 'application/json',
-        'Notion-Version': '2022-06-28'
-      }
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'query',
+        databaseId: NOTION_DATABASE_ID
+      })
     });
 
     if (response.ok) {
       const data = await response.json();
       
       for (const item of data.results) {
-        await fetch('https://api.notion.com/v1/pages/' + item.id, {
-          method: 'PATCH',
-          headers: {
-            'Authorization': `Bearer ${notionApiKey}`,
-            'Notion-Version': '2022-06-28'
-          },
-          body: JSON.stringify({ archived: true })
+        await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'delete',
+            pageId: item.id
+          })
         });
       }
       
@@ -573,13 +1066,6 @@ function updateTotalTime() {
   }
 }
 
-saveConfigBtn.addEventListener('click', () => {
-  notionApiKey = apiKeyInput.value;
-  localStorage.setItem('notionApiKey', notionApiKey);
-  syncStatus.textContent = '✓ Conectado';
-  apiKeyInput.value = '';
-});
-
 presets.forEach(preset => {
   preset.addEventListener('click', () => {
     if (isRunning) return;
@@ -612,12 +1098,7 @@ deleteHistoryBtn.addEventListener('click', () => {
   }
 });
 
-if (notionApiKey) {
-  syncStatus.textContent = '✓ Conectado';
-} else {
-  syncStatus.textContent = 'Configure API Key';
-}
-
+syncStatus.textContent = '✓ Conectado ao Notion';
 updateDisplay();
 </script>
 
